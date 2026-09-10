@@ -4,18 +4,15 @@ import io.github.sophon.spring_book.Book
 import io.github.sophon.spring_book.util.equalsIgnoreCase
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.server.ResponseStatusException
 
 @RestController
 internal class BookController {
     private val bookMap: MutableMap<String, Book> = generateBooks()
     private val mutex = Mutex()
 
-
-    @GetMapping("/hello")
-    fun hello(): String {
-        return "Hello world"
-    }
 
     @GetMapping("/api/books")
     fun getBooks(
@@ -31,6 +28,11 @@ internal class BookController {
         return result
     }
 
+    @GetMapping("/api/books/{title}")
+    fun getBook(@PathVariable title: String): Book? {
+        return bookMap[title]
+    }
+
     @PostMapping("/api/books")
     suspend fun addBook(
         @RequestBody book: Book,
@@ -40,9 +42,18 @@ internal class BookController {
         }
     }
 
-    @GetMapping("/api/books/{title}")
-    fun getBook(@PathVariable title: String): Book? {
-        return bookMap[title]
+    @PutMapping("/api/books/{title}")
+    suspend fun updateBook(
+        @PathVariable title: String,
+        @RequestBody newBook: Book,
+    ) {
+        mutex.withLock {
+            if (title !in bookMap) {
+                throw ResponseStatusException(HttpStatus.NOT_FOUND, "Book $title not found.")
+            } else {
+                bookMap[title] = newBook
+            }
+        }
     }
 
 
