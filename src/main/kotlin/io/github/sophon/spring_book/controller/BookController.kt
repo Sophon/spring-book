@@ -31,7 +31,9 @@ internal class BookController {
 
     @GetMapping("/{title}")
     fun getBook(@PathVariable title: String): Book? {
-        return bookMap[title]
+        val result = bookMap[title]
+
+        return result ?: throwNotFound(title)
     }
 
     @PostMapping
@@ -50,7 +52,7 @@ internal class BookController {
     ) {
         mutex.withLock {
             if (title !in bookMap) {
-                throw ResponseStatusException(HttpStatus.NOT_FOUND, "Book $title not found.")
+                throwNotFound(title)
             } else {
                 bookMap[title] = newBook
             }
@@ -63,7 +65,7 @@ internal class BookController {
     ) {
         mutex.withLock {
             if (title !in bookMap) {
-                throw ResponseStatusException(HttpStatus.NOT_FOUND, "Book $title not found.")
+                throwNotFound(title)
             } else {
                 bookMap.remove(title)
             }
@@ -97,5 +99,9 @@ internal class BookController {
             .associateBy { it.title }
             .toMutableMap()
         return books
+    }
+
+    private fun throwNotFound(title: String): Nothing {
+        throw ResponseStatusException(HttpStatus.NOT_FOUND, "Book $title not found.")
     }
 }
