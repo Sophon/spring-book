@@ -56,6 +56,19 @@ internal class BookController {
         }
     }
 
+    @DeleteMapping("/api/books/{title}")
+    suspend fun deleteBook(
+        @PathVariable title: String,
+    ) {
+        mutex.withLock {
+            if (title !in bookMap) {
+                throw ResponseStatusException(HttpStatus.NOT_FOUND, "Book $title not found.")
+            } else {
+                bookMap.remove(title)
+            }
+        }
+    }
+
 
     private fun generateBooks(): MutableMap<String, Book> {
         val books = listOf(
