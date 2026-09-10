@@ -2,6 +2,7 @@ package io.github.sophon.spring_book.controller
 
 import io.github.sophon.spring_book.Book
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -17,6 +18,13 @@ internal class BookController {
     @GetMapping("/api/books")
     fun getBooks(): List<Book> {
         return bookList
+    }
+
+    @GetMapping("/api/books/{title}")
+    fun getBook(@PathVariable title: String): Book? {
+        val result = bookList
+            .firstOrNull { it.title.equals(title, ignoreCase = true) }
+        return result
     }
 
 
