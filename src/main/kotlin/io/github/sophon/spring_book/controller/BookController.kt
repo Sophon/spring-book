@@ -9,12 +9,13 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 
 @RestController
+@RequestMapping("/api/books")
 internal class BookController {
     private val bookMap: MutableMap<String, Book> = generateBooks()
     private val mutex = Mutex()
 
 
-    @GetMapping("/api/books")
+    @GetMapping
     fun getBooks(
         @RequestParam(required = false) category: String?,
     ): List<Book> {
@@ -28,12 +29,12 @@ internal class BookController {
         return result
     }
 
-    @GetMapping("/api/books/{title}")
+    @GetMapping("/{title}")
     fun getBook(@PathVariable title: String): Book? {
         return bookMap[title]
     }
 
-    @PostMapping("/api/books")
+    @PostMapping
     suspend fun addBook(
         @RequestBody book: Book,
     ) {
@@ -42,7 +43,7 @@ internal class BookController {
         }
     }
 
-    @PutMapping("/api/books/{title}")
+    @PutMapping("/{title}")
     suspend fun updateBook(
         @PathVariable title: String,
         @RequestBody newBook: Book,
@@ -56,7 +57,7 @@ internal class BookController {
         }
     }
 
-    @DeleteMapping("/api/books/{title}")
+    @DeleteMapping("/{title}")
     suspend fun deleteBook(
         @PathVariable title: String,
     ) {
