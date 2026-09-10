@@ -1,13 +1,15 @@
 package io.github.sophon.spring_book.controller
 
 import io.github.sophon.spring_book.Book
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RestController
+import io.github.sophon.spring_book.util.equalsIgnoreCase
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import org.springframework.web.bind.annotation.*
 
 @RestController
 internal class BookController {
-    private val bookList: List<Book> = generateBooks()
+    private val bookMap: MutableMap<String, Book> = generateBooks()
+    private val mutex = Mutex()
 
 
     @GetMapping("/hello")
@@ -16,19 +18,35 @@ internal class BookController {
     }
 
     @GetMapping("/api/books")
-    fun getBooks(): List<Book> {
-        return bookList
+    fun getBooks(
+        @RequestParam(required = false) category: String?,
+    ): List<Book> {
+        if (category.isNullOrBlank()) {
+            return bookMap.values.toList()
+        }
+
+        val result = bookMap.values
+            .filter { it.category.equalsIgnoreCase(category) }
+
+        return result
+    }
+
+    @PostMapping("/api/books")
+    suspend fun addBook(
+        @RequestBody book: Book,
+    ) {
+        mutex.withLock {
+            bookMap.putIfAbsent(book.title, book)
+        }
     }
 
     @GetMapping("/api/books/{title}")
     fun getBook(@PathVariable title: String): Book? {
-        val result = bookList
-            .firstOrNull { it.title.equals(title, ignoreCase = true) }
-        return result
+        return bookMap[title]
     }
 
 
-    private fun generateBooks(): List<Book> {
+    private fun generateBooks(): MutableMap<String, Book> {
         val books = listOf(
             Book("Pride and Prejudice", "Jane Austen", "Romance"),
             Book("1984", "George Orwell", "Dystopian"),
@@ -51,6 +69,8 @@ internal class BookController {
             Book("The Adventures of Huckleberry Finn", "Mark Twain", "Adventure"),
             Book("Frankenstein", "Mary Shelley", "Gothic"),
         )
+            .associateBy { it.title }
+            .toMutableMap()
         return books
     }
 }
