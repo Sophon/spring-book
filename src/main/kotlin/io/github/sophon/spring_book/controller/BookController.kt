@@ -20,6 +20,7 @@ internal class BookController {
     private val mutex = Mutex()
 
 
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping
     fun getBooks(
         @RequestParam(required = false) category: String?,
@@ -34,6 +35,7 @@ internal class BookController {
         return result
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}")
     fun getBook(
         @PathVariable @Min(value = 1) id: Long,
@@ -43,8 +45,9 @@ internal class BookController {
         return result ?: throwNotFound(id)
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    suspend fun addBook(
+    suspend fun createBook(
         @RequestBody @Valid bookRequestDto: BookRequestDto,
     ) {
         mutex.withLock {
@@ -55,6 +58,7 @@ internal class BookController {
         }
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT) //no return
     @PutMapping("/{id}")
     suspend fun updateBook(
         @PathVariable @Min(value = 1) id: Long,
@@ -70,6 +74,7 @@ internal class BookController {
         }
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     suspend fun deleteBook(
         @PathVariable @Min(value = 1) id: Long,
