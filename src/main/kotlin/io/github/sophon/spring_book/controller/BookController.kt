@@ -1,7 +1,10 @@
 package io.github.sophon.spring_book.controller
 
-import io.github.sophon.spring_book.Book
+import io.github.sophon.spring_book.mapper.toDomain
+import io.github.sophon.spring_book.model.Book
+import io.github.sophon.spring_book.model.BookRequestDto
 import io.github.sophon.spring_book.util.equalsIgnoreCase
+import io.github.sophon.spring_book.util.generateId
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.springframework.http.HttpStatus
@@ -38,9 +41,12 @@ internal class BookController {
 
     @PostMapping
     suspend fun addBook(
-        @RequestBody book: Book,
+        @RequestBody bookRequestDto: BookRequestDto,
     ) {
         mutex.withLock {
+            val id = bookMap.generateId()
+            val book = bookRequestDto.toDomain(id)
+
             bookMap.putIfAbsent(book.id, book)
         }
     }
