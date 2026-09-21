@@ -5,6 +5,8 @@ import io.github.sophon.spring_book.model.Book
 import io.github.sophon.spring_book.model.BookRequestDto
 import io.github.sophon.spring_book.util.equalsIgnoreCase
 import io.github.sophon.spring_book.util.generateId
+import jakarta.validation.Valid
+import jakarta.validation.constraints.Min
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.springframework.http.HttpStatus
@@ -33,7 +35,9 @@ internal class BookController {
     }
 
     @GetMapping("/{id}")
-    fun getBook(@PathVariable id: Long): Book? {
+    fun getBook(
+        @PathVariable @Min(value = 1) id: Long,
+    ): Book? {
         val result = bookMap[id]
 
         return result ?: throwNotFound(id)
@@ -41,7 +45,7 @@ internal class BookController {
 
     @PostMapping
     suspend fun addBook(
-        @RequestBody bookRequestDto: BookRequestDto,
+        @RequestBody @Valid bookRequestDto: BookRequestDto,
     ) {
         mutex.withLock {
             val id = bookMap.generateId()
@@ -53,8 +57,8 @@ internal class BookController {
 
     @PutMapping("/{id}")
     suspend fun updateBook(
-        @PathVariable id: Long,
-        @RequestBody bookRequestDto: BookRequestDto,
+        @PathVariable @Min(value = 1) id: Long,
+        @RequestBody @Valid bookRequestDto: BookRequestDto,
     ) {
         mutex.withLock {
             if (id !in bookMap) {
@@ -68,7 +72,7 @@ internal class BookController {
 
     @DeleteMapping("/{id}")
     suspend fun deleteBook(
-        @PathVariable id: Long,
+        @PathVariable @Min(value = 1) id: Long,
     ) {
         mutex.withLock {
             if (id !in bookMap) {
