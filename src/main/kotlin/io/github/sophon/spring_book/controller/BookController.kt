@@ -54,12 +54,13 @@ internal class BookController {
     @PutMapping("/{id}")
     suspend fun updateBook(
         @PathVariable id: Long,
-        @RequestBody newBook: Book,
+        @RequestBody bookRequestDto: BookRequestDto,
     ) {
         mutex.withLock {
             if (id !in bookMap) {
                 throwNotFound(id)
             } else {
+                val newBook = bookRequestDto.toDomain(id)
                 bookMap[id] = newBook
             }
         }
