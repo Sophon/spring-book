@@ -5,6 +5,9 @@ import io.github.sophon.spring_book.model.Book
 import io.github.sophon.spring_book.model.BookRequestDto
 import io.github.sophon.spring_book.util.equalsIgnoreCase
 import io.github.sophon.spring_book.util.generateId
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
 import kotlinx.coroutines.sync.Mutex
@@ -13,6 +16,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 
+@Tag(name = "Books REST API endpoints", description = "Operations related to books")
 @RestController
 @RequestMapping("/api/books")
 internal class BookController {
@@ -20,10 +24,13 @@ internal class BookController {
     private val mutex = Mutex()
 
 
+    @Operation(summary = "Get books", description = "Get a list of all available books")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
     fun getBooks(
-        @RequestParam(required = false) category: String?,
+        @RequestParam(required = false)
+        @Parameter(description = "Optional category filter")
+        category: String?,
     ): List<Book> {
         if (category.isNullOrBlank()) {
             return bookMap.values.toList()
@@ -35,6 +42,7 @@ internal class BookController {
         return result
     }
 
+    @Operation(summary = "Get a book", description = "Get a book based on the ID")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}")
     fun getBook(
@@ -45,6 +53,7 @@ internal class BookController {
         return result ?: throwNotFound(id)
     }
 
+    @Operation(summary = "Create a book", description = "Create a new book from data")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     suspend fun createBook(
@@ -58,6 +67,7 @@ internal class BookController {
         }
     }
 
+    @Operation(summary = "Update a book", description = "Update a book based on the ID")
     @ResponseStatus(HttpStatus.NO_CONTENT) //no return
     @PutMapping("/{id}")
     suspend fun updateBook(
@@ -74,6 +84,7 @@ internal class BookController {
         }
     }
 
+    @Operation(summary = "Delete a book", description = "Delete a book based on the ID")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     suspend fun deleteBook(
