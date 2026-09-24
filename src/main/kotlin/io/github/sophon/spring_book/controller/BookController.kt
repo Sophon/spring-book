@@ -71,20 +71,23 @@ internal class BookController {
     }
 
     @Operation(summary = "Update a book", description = "Update a book based on the ID")
-    @ResponseStatus(HttpStatus.NO_CONTENT) //no return
+    @ResponseStatus(HttpStatus.OK)
     @PutMapping("/{id}")
     suspend fun updateBook(
         @PathVariable @Min(value = 1) id: Long,
         @RequestBody @Valid bookRequestDto: BookRequestDto,
-    ) {
-        mutex.withLock {
+    ): Book {
+        val updated = mutex.withLock {
             if (id !in bookMap) {
                 throwNotFound(id)
             } else {
-                val newBook = bookRequestDto.toDomain(id)
-                bookMap[id] = newBook
+                val updated = bookRequestDto.toDomain(id)
+                bookMap[id] = updated
+                updated
             }
         }
+
+        return updated
     }
 
     @Operation(summary = "Delete a book", description = "Delete a book based on the ID")
