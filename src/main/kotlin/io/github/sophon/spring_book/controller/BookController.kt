@@ -3,7 +3,6 @@ package io.github.sophon.spring_book.controller
 import io.github.sophon.spring_book.exception.BookNotFoundException
 import io.github.sophon.spring_book.mapper.toDomain
 import io.github.sophon.spring_book.model.Book
-import io.github.sophon.spring_book.model.BookErrorResponseDto
 import io.github.sophon.spring_book.model.BookRequestDto
 import io.github.sophon.spring_book.util.equalsIgnoreCase
 import io.github.sophon.spring_book.util.generateId
@@ -15,9 +14,7 @@ import jakarta.validation.constraints.Min
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import kotlin.time.Clock
 
 @Tag(name = "Books REST API endpoints", description = "Operations related to books")
 @RestController
@@ -136,16 +133,5 @@ internal class BookController {
 
     private fun throwNotFound(id: Long): Nothing {
         throw BookNotFoundException(message = "Book $id not found.")
-    }
-
-
-    @ExceptionHandler
-    private fun handleException(exception: BookNotFoundException): ResponseEntity<BookErrorResponseDto> {
-        val error = BookErrorResponseDto(
-            status = HttpStatus.NOT_FOUND.value(),
-            message = exception.message.orEmpty(),
-            timeStamp = Clock.System.now().toEpochMilliseconds(),
-        )
-        return ResponseEntity(error, HttpStatus.NOT_FOUND)
     }
 }
